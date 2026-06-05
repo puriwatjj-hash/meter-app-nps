@@ -684,11 +684,25 @@ async function loadSummary() {
 
     const formRows = FORM_DEFS[areaObj.formType];
 
-    html += `
-      <h3 style="margin:20px 0 10px;color:#4f8ef7">
-        ${areaObj.name}
-      </h3>
+   html += `
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin:20px 0 8px;
+">
+  <h3 style="margin:0;font-size:16px;color:var(--accent)">
+    ${areaObj.name}
+  </h3>
 
+  <button
+    class="btn-save export-btn"
+    data-area="${areaId}"
+  >
+    📊 Export Excel
+  </button>
+</div>
+`;
       <div class="table-wrap">
       <table class="summary">
       <thead>
@@ -758,7 +772,11 @@ async function loadSummary() {
     `;
   });
 
-  container.innerHTML = html;
+  document.querySelectorAll('.export-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    exportAreaExcel(btn.dataset.area);
+  });
+});
 }
 // ============================================================
 // USAGE CHART
