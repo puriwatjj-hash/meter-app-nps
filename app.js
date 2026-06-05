@@ -951,3 +951,32 @@ function toast(msg, type='success') {
   c.appendChild(t);
   setTimeout(()=>t.remove(), 3500);
 }
+
+function exportAreaExcel(areaId){
+
+  const btn = document.querySelector(
+    `.export-btn[data-area="${areaId}"]`
+  );
+
+  if(!btn){
+    alert("ไม่พบปุ่ม Export");
+    return;
+  }
+
+  const table =
+    btn.parentElement.nextElementSibling.querySelector("table");
+
+  if(!table){
+    alert("ไม่พบตาราง");
+    return;
+  }
+
+  const wb = XLSX.utils.table_to_book(table,{
+    sheet: areaId
+  });
+
+  XLSX.writeFile(
+    wb,
+    areaId + ".xlsx"
+  );
+}
