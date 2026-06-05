@@ -5,7 +5,7 @@
 const SUPABASE_URL      = 'https://wzbteoqabsglctunhbkn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_zUpN8fXy2jasPKmGt6Ur9A_QneEuvzC';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ============================================================
 // CENTRAL CONFIG
@@ -219,7 +219,7 @@ function buildSidebar() {
 }
 
 async function loadCustomMeters() {
-  const { data } = await supabase.from('custom_meters').select('*');
+  const { data } = await db.from('custom_meters').select('*');
   S.customMeters = {};
   (data||[]).forEach(r=>{
     if (!S.customMeters[r.area]) S.customMeters[r.area]=[];
@@ -272,7 +272,7 @@ function initSelects() {
 }
 
 async function loadDefaultDate() {
-  const { data } = await supabase.from('meter_records').select('year_be,month').order('year_be',{ascending:false}).order('month',{ascending:false}).limit(1);
+  const { data } = await db.from('meter_records').select('year_be,month').order('year_be',{ascending:false}).order('month',{ascending:false}).limit(1);
   if (data && data.length) {
     S.entryYear  = data[0].year_be;
     S.entryMonth = data[0].month;
@@ -362,7 +362,7 @@ async function addCustomMeter() {
   if (!name || !name.trim()) return;
   const n = name.trim();
   const area = AREAS.find(a=>a.id===S.currentArea);
-  const { error } = await supabase.from('custom_meters').upsert({area:area.id, meter_name:n},{onConflict:'area,meter_name'});
+  const { error } = await db.from('custom_meters').upsert({area:area.id, meter_name:n},{onConflict:'area,meter_name'});
   if (error) { toast('เกิดข้อผิดพลาด: '+error.message,'error'); return; }
   if (!S.customMeters[area.id]) S.customMeters[area.id]=[];
   if (!S.customMeters[area.id].includes(n)) S.customMeters[area.id].push(n);
@@ -376,7 +376,7 @@ async function renderStandardForm(area, meterName) {
   const fa = document.getElementById('meter-form-area');
   fa.innerHTML = '<div class="loading">กำลังโหลด...</div>';
 
-  const { data } = await supabase.from('meter_records')
+  const { data } = await db.from('meter_records')
     .select('*').eq('area',area.id).eq('meter_name',meterName)
     .eq('year_be',S.entryYear).eq('month',S.entryMonth).maybeSingle();
 
@@ -432,7 +432,7 @@ async function saveStandardForm(area, meterName) {
   document.querySelectorAll('#form-tbody input[type=text]').forEach(inp=>{
     vals[inp.dataset.key] = inp.value;
   });
-  const { error } = await supabase.from('meter_records').upsert({
+  const { error } = await db.from('meter_records').upsert({
     area: area.id, meter_name: meterName,
     year_be: S.entryYear, month: S.entryMonth,
     values: vals,
@@ -453,7 +453,7 @@ async function renderSMPForm(area) {
   fa.innerHTML = '<div class="loading">กำลังโหลด...</div>';
 
   // Get available months for this area
-  const { data: allRec } = await supabase.from('meter_records').select('year_be,month,values,photo_urls,updated_by,updated_at')
+  const { data: allRec } = await db.from('meter_records').select('year_be,month,values,photo_urls,updated_by,updated_at')
     .eq('area',area.id).order('year_be').order('month');
 
   // Build month list (include current if not exists)
@@ -573,15 +573,15 @@ async function saveSMPForm(area) {
     if (fileInp && fileInp.files[0]) {
       const file = fileInp.files[0];
       const path = `${area.id}/${S.entryYear}-${S.entryMonth}-${id}-${Date.now()}.${file.name.split('.').pop()}`;
-      const { data, error } = await supabase.storage.from('meter-photos').upload(path, file, {upsert:true});
+      const { data, error } = await db.storage.from('meter-photos').upload(path, file, {upsert:true});
       if (!error) {
-        const { data: urlData } = supabase.storage.from('meter-photos').getPublicUrl(path);
+        const { data: urlData } = db.storage.from('meter-photos').getPublicUrl(path);
         photoUrls[id] = urlData.publicUrl;
       }
     }
   }
 
-  const { error } = await supabase.from('meter_records').upsert({
+  const { error } = await db.from('meter_records').upsert({
     area: area.id,
     meter_name: 'SMP',
     year_be: S.entryYear,
@@ -600,7 +600,7 @@ async function saveSMPForm(area) {
 
 async function deleteSMPMonth(area) {
   if (!confirm(`ลบข้อมูลเดือน ${THAI_MONTHS[S.entryMonth]} ${S.entryYear}?`)) return;
-  await supabase.from('meter_records').delete()
+  await db.from('meter_records').delete()
     .eq('area',area.id).eq('meter_name','SMP')
     .eq('year_be',S.entryYear).eq('month',S.entryMonth);
   toast('ลบแล้ว','success');
@@ -618,7 +618,7 @@ async function loadSummary() {
   const container = document.getElementById('summary-content');
   container.innerHTML = '<div class="loading">กำลังโหลด...</div>';
 
-  let q = supabase.from('meter_records').select('*').eq('year_be',y).eq('month',m);
+  let q = db.from('meter_records').select('*').eq('year_be',y).eq('month',m);
   if (a) q = q.eq('area',a);
   const {data} = await q.order('area').order('meter_name');
 
@@ -681,12 +681,12 @@ async function loadChart() {
   if (!area) return;
 
   // Fetch data for year (need prev month too)
-  const { data } = await supabase.from('meter_records').select('*')
+  const { data } = await db.from('meter_records').select('*')
     .eq('area', areaId).eq('year_be', y).order('month');
   const recs = data||[];
 
   // Also fetch prev year Dec for January calculation
-  const { data: prevData } = await supabase.from('meter_records').select('*')
+  const { data: prevData } = await db.from('meter_records').select('*')
     .eq('area', areaId).eq('year_be', y-1).eq('month', 12);
   const allRecs = [...(prevData||[]), ...recs];
 
