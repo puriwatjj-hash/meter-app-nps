@@ -611,6 +611,7 @@ async function deleteSMPMonth(area) {
 // SUMMARY TABLE
 // ============================================================
 async function loadSummary() {
+
   const y = +document.getElementById('sum-year').value;
   const m = +document.getElementById('sum-month').value;
   const a = document.getElementById('sum-area').value;
@@ -618,42 +619,114 @@ async function loadSummary() {
   const container = document.getElementById('summary-content');
   container.innerHTML = '<div class="loading">กำลังโหลด...</div>';
 
-  let q = db.from('meter_records').select('*').eq('year_be',y).eq('month',m);
-  if (a) q = q.eq('area',a);
-  const {data} = await q.order('area').order('meter_name');
+  let q = db
+    .from('meter_records')
+    .select('*')
+    .eq('year_be', y)
+    .eq('month', m);
 
-  if (!data||!data.length) { container.innerHTML='<div class="loading">ไม่พบข้อมูล</div>'; return; }
+  if (a) q = q.eq('area', a);
 
-  // Group by area
+  const { data } = await q.order('area').order('meter_name');
+
+  if (!data || !data.length) {
+    container.innerHTML = '<div class="loading">ไม่พบข้อมูล</div>';
+    return;
+  }
+
   const byArea = {};
-  data.forEach(r=>{ if(!byArea[r.area]) byArea[r.area]=[]; byArea[r.area].push(r); });
+
+  data.forEach(r => {
+    if (!byArea[r.area]) byArea[r.area] = [];
+    byArea[r.area].push(r);
+  });
 
   let html = '';
-  Object.entries(byArea).forEach(([areaId, recs])=>{
-    const areaObj = AREAS.find(x=>x.id===areaId)||{name:areaId};
-    html += `<h3 style="margin:20px 0 8px;font-size:16px;color:var(--accent)">${areaObj.name}</h3>`;
-    html += `<div class="table-wrap"><table class="summary">
-      <thead><tr>
-        <th>มิเตอร์</th><th>ปี</th><th>เดือน</th><th>ข้อมูล (JSON)</th><th>อัปเดตโดย</th><th>อัปเดตเมื่อ</th>
-      </tr></thead><tbody>`;
-    recs.forEach(r=>{
-      const valStr = JSON.stringify(r.values||{});
-      const shortVal = valStr.length>120 ? valStr.substring(0,120)+'...' : valStr;
-      const dt = r.updated_at ? new Date(r.updated_at).toLocaleString('th-TH') : '-';
-      html += `<tr>
-        <td><span class="badge badge-blue">${r.meter_name}</span></td>
-        <td>${r.year_be}</td>
-        <td>${THAI_MONTHS[r.month]}</td>
-        <td><code style="font-size:11px;color:var(--text2)">${escHtml(shortVal)}</code></td>
-        <td>${r.updated_by||'-'}</td>
-        <td style="white-space:nowrap">${dt}</td>
-      </tr>`;
+
+  Object.entries(byArea).forEach(([areaId, recs]) => {
+
+    const areaObj = AREAS.find(a => a.id === areaId);
+
+    if (!areaObj) return;
+
+    const formRows = FORM_DEFS[areaObj.formType];
+
+    html += `
+      <h3 style="margin:20px 0 10px;color:#4f8ef7">
+        ${areaObj.name}
+      </h3>
+
+      <div class="table-wrap">
+      <table class="summary">
+      <thead>
+      <tr>
+        <th>No.</th>
+        <th>รายการ</th>
+    `;
+
+    recs.forEach(r => {
+      html += `
+        <th>
+          ${r.meter_name}<br>
+          <small>${THAI_MONTHS[m]} ${y}</small>
+        </th>
+      `;
     });
-    html += '</tbody></table></div>';
+
+    html += `
+      </tr>
+      </thead>
+      <tbody>
+    `;
+
+    const duplicateCounter = {};
+
+    formRows.forEach((row, index) => {
+
+      let key;
+
+      if (row.no) {
+
+        key = row.no;
+
+      } else {
+
+        duplicateCounter[row.label] =
+          (duplicateCounter[row.label] || 0) + 1;
+
+        key =
+          '__' +
+          row.label.replace(/\s+/g, '_') +
+          '_' +
+          duplicateCounter[row.label];
+      }
+
+      html += `
+        <tr>
+          <td>${row.no || ''}</td>
+          <td>${row.label}</td>
+      `;
+
+      recs.forEach(r => {
+
+        const value = r.values?.[key] || '';
+
+        html += `<td>${value}</td>`;
+
+      });
+
+      html += `</tr>`;
+    });
+
+    html += `
+      </tbody>
+      </table>
+      </div>
+    `;
   });
+
   container.innerHTML = html;
 }
-
 // ============================================================
 // USAGE CHART
 // ============================================================
