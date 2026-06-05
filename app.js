@@ -702,7 +702,7 @@ margin:20px 0 8px;
     📊 Export Excel
   </button>
 </div>
-`;
+
       <div class="table-wrap">
       <table class="summary">
       <thead>
