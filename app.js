@@ -797,11 +797,16 @@ function drawNPSOrInter22Chart(ctx, allRecs, months, labels, y, meterF, area) {
       if (cur8_1L===null||pre8_1L===null) return null;
       return (cur8_1L-pre8_1L)+(cur8_2L||0)-(pre8_2L||0);
     });
-    return { label:meter, data, borderColor:colors[i%colors.length], backgroundColor:colors[i%colors.length]+'33', tension:.3, fill:true };
+    return {
+  label:meter,
+  data,
+  backgroundColor:colors[i%colors.length],
+  borderWidth:1
+};
   });
 
   S.chartInstance = new Chart(ctx,{
-    type:'line',
+    type:'bar',
     data:{ labels, datasets },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#8892b0'}}}, scales:{x:{ticks:{color:'#8892b0'},grid:{color:'#2e3350'}},y:{ticks:{color:'#8892b0'},grid:{color:'#2e3350'}}} }
   });
@@ -828,12 +833,20 @@ function drawInter115Chart(ctx, allRecs, months, labels, y, meterF, area) {
       if(c1===null||p1===null) return null;
       return (c1-p1)+(c2||0)-(p2||0);
     });
-    datasets.push({ label:`${meter} Export`, data:expData, borderColor:exportColors[i%5], backgroundColor:exportColors[i%5]+'33', tension:.3 });
-    datasets.push({ label:`${meter} Import`, data:impData, borderColor:importColors[i%5], backgroundColor:importColors[i%5]+'33', tension:.3 });
+    datasets.push({
+  label:`${meter} Export`,
+  data:expData,
+  backgroundColor:exportColors[i%5]
+});
+    datasets.push({
+  label:`${meter} Import`,
+  data:impData,
+  backgroundColor:importColors[i%5]
+});
   });
 
   S.chartInstance = new Chart(ctx,{
-    type:'line',
+    type:'bar',
     data:{ labels, datasets },
     options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#8892b0'}}}, scales:{x:{ticks:{color:'#8892b0'},grid:{color:'#2e3350'}},y:{ticks:{color:'#8892b0'},grid:{color:'#2e3350'}}} }
   });
