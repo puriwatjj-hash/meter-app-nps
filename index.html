@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meter Reading App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">⚡ MeterApp</div>
+    <div class="auth-sub">ระบบจดเลขมิเตอร์รายเดือน</div>
+    <label>ชื่อผู้ใช้</label>
+    <input id="inp-user" type="text" placeholder="username" autocomplete="username">
+    <label>รหัสผ่าน</label>
+    <input id="inp-pass" type="password" placeholder="password" autocomplete="current-password">
+    <button class="btn-primary" id="btn-login">เข้าสู่ระบบ</button>
+    <div class="auth-err" id="auth-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-title">⚡ MeterApp</div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-user" id="topbar-user"></div>
+    <button class="btn-logout" id="btn-logout">ออกจากระบบ</button>
+  </div>
+
+  <div class="body-wrap">
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div class="sidebar-header">เมนูหลัก</div>
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    </div>
+
+    <!-- MAIN -->
+    <main id="main">
+
+      <!-- PAGE: meter-entry -->
+      <div class="page" id="page-meter-entry">
+        <div class="page-title">📋 บันทึกเลขมิเตอร์</div>
+        <div class="page-sub" id="entry-area-label"></div>
+        <div class="filter-row">
+          <label>ปี (พ.ศ.)</label>
+          <select id="entry-year"></select>
+          <label>เดือน</label>
+          <select id="entry-month"></select>
+        </div>
+        <div class="meter-tabs" id="meter-tabs"></div>
+        <div id="meter-form-area"></div>
+      </div>
+
+      <!-- PAGE: summary -->
+      <div class="page" id="page-summary">
+        <div class="page-title">📊 ตารางสรุป</div>
+        <div class="filter-row">
+          <label>ปี (พ.ศ.)</label>
+          <select id="sum-year"></select>
+          <label>เดือน</label>
+          <select id="sum-month"></select>
+          <label>พื้นที่</label>
+          <select id="sum-area"></select>
+        </div>
+        <div id="summary-content"></div>
+      </div>
+
+      <!-- PAGE: chart -->
+      <div class="page" id="page-chart">
+        <div class="page-title">📈 กราฟการใช้พลังงาน</div>
+        <div class="filter-row">
+          <label>ปี (พ.ศ.)</label>
+          <select id="chart-year"></select>
+          <label>เดือน</label>
+          <select id="chart-month"></select>
+          <label>พื้นที่</label>
+          <select id="chart-area"></select>
+          <label id="chart-meter-label">มิเตอร์</label>
+          <select id="chart-meter"></select>
+        </div>
+        <div class="chart-container">
+          <div class="chart-wrap"><canvas id="main-chart"></canvas></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Sidebar toggle -->
+<button id="toggle-sidebar" title="เปิด/ปิดเมนู">&lt;</button>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="app.js"></script>
+</body>
+</html>
