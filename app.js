@@ -772,6 +772,7 @@ margin:20px 0 8px;
     `;
   });
 
+container.innerHTML = html;
   document.querySelectorAll('.export-btn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     exportAreaExcel(btn.dataset.area);
