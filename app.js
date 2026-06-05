@@ -163,7 +163,7 @@ function showApp() {
 
 function doLogin() {
   const u = document.getElementById('inp-user').value.trim();
-  const p = document.getElementById('inp-pass').value.trim();
+ const p = document.getElementById('inp-pass').value.trim();
   if (u==='NPSUser' && p==='NPSUser') {
     localStorage.setItem('meterapp_user', u);
     S.loggedIn = true;
