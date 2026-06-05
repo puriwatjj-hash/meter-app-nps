@@ -416,8 +416,9 @@ async function renderStandardForm(area, meterName) {
         <tbody id="form-tbody">${tableRows}</tbody>
       </table>
       <div class="form-footer">
-        <button class="btn-save" id="btn-save-form">💾 บันทึก</button>
-      </div>
+  <button class="btn-danger" id="btn-delete-form">🗑 ลบเดือนนี้</button>
+  <button class="btn-save" id="btn-save-form">💾 บันทึก</button>
+</div>
     </div>`;
 
   document.getElementById('btn-edit-form').addEventListener('click',()=>{
@@ -425,6 +426,7 @@ async function renderStandardForm(area, meterName) {
     renderStandardForm(area, meterName);
   });
   document.getElementById('btn-save-form').addEventListener('click',()=> saveStandardForm(area, meterName));
+  document.getElementById('btn-delete-form').addEventListener('click',()=> deleteStandardForm(area, meterName));
 }
 
 async function saveStandardForm(area, meterName) {
@@ -444,6 +446,37 @@ async function saveStandardForm(area, meterName) {
   toast('บันทึกสำเร็จ','success');
   renderStandardForm(area, meterName);
 }
+
+async function deleteStandardForm(area, meterName) {
+
+  if (!confirm(
+`ต้องการลบข้อมูลมิเตอร์
+
+${meterName}
+
+เดือน ${THAI_MONTHS[S.entryMonth]} ${S.entryYear}
+
+ใช่หรือไม่?`
+  )) return;
+
+  const { error } = await db
+    .from('meter_records')
+    .delete()
+    .eq('area', area.id)
+    .eq('meter_name', meterName)
+    .eq('year_be', S.entryYear)
+    .eq('month', S.entryMonth);
+
+  if (error) {
+    toast('ลบไม่สำเร็จ : ' + error.message,'error');
+    return;
+  }
+
+  toast('ลบข้อมูลสำเร็จ','success');
+
+  loadMeterForm();
+}
+
 
 // ============================================================
 // SMP FORM
